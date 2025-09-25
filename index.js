@@ -1,37 +1,70 @@
+// index.js
 import express from "express";
-import bodyParser from "body-parser";
+import cors from "cors";
+import dotenv from "dotenv";
 import OpenAI from "openai";
 
+dotenv.config();
 const app = express();
-app.use(bodyParser.json());
+const port = process.env.PORT || 3000;
 
-// ✅ Use the key from GitHub Secrets / environment
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+app.use(cors());
+app.use(express.json());
 
-app.get("/", (req, res) => res.send("AI QuizCraft backend running!"));
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
+// Simple health check
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
+// Quiz generation endpoint
 app.post("/quiz", async (req, res) => {
-  const { notes, difficulty } = req.body;
-
-  if (!notes || !difficulty) {
-    return res.status(400).json({ error: "Notes and difficulty are required" });
-  }
-
   try {
-    const prompt = `Create 3 multiple-choice questions from these notes:\n\n${notes}\nDifficulty: ${difficulty}\nReturn JSON like [{"question":"..","options":[".."],"answer":0}]`;
+    const { notes, difficulty } = req.body;
 
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }]
+    if (!notes || !difficulty) {
+      return res.status(400).json({ error: "Notes and difficulty are required" });
+    }
+
+    // Call OpenAI to generate quiz
+    const prompt = `
+Create a ${difficulty} multiple-choice quiz based on these notes:
+${notes}
+
+Format response as JSON array:
+[
+  { "question": "…", "options": ["…","…","…","…"], "answer": 0 },
+  ...
+]
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7
     });
 
-    const quiz = JSON.parse(response.choices[0].message.content);
-    res.json(quiz);
+    const text = completion.choices[0].message.content;
+
+    // Parse AI response as JSON
+    let questions = [];
+    try {
+      questions = JSON.parse(text);
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to parse AI response" });
+    }
+
+    res.json(questions);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "AI generation failed" });
+    res.status(500).json({ error: "Quiz generation failed" });
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
