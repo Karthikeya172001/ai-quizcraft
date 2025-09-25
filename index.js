@@ -1,21 +1,15 @@
 import express from "express";
 import bodyParser from "body-parser";
-import dotenv from "dotenv";
 import OpenAI from "openai";
 
-dotenv.config();
 const app = express();
 app.use(bodyParser.json());
 
-// OpenAI client using your API key from environment
+// ✅ Use the key from GitHub Secrets / environment
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Test route to check if server is running
-app.get("/", (req, res) => {
-  res.send("AI QuizCraft backend is running!");
-});
+app.get("/", (req, res) => res.send("AI QuizCraft backend running!"));
 
-// Main route: generate quiz from notes
 app.post("/quiz", async (req, res) => {
   const { notes, difficulty } = req.body;
 
@@ -39,6 +33,5 @@ app.post("/quiz", async (req, res) => {
   }
 });
 
-// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
