@@ -4,17 +4,57 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI QuizCraft</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+    background-color: #f7f7f7;
+  }
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+  textarea {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+  }
+  select, button {
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  #quiz div {
+    background-color: #fff;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+  }
+  #quiz button {
+    margin: 3px;
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 10px 0;
+  }
+</style>
 </head>
 <body>
 <h1>AI QuizCraft</h1>
 
-<textarea id="notes" placeholder="Paste teacher notes here" rows="6" cols="40"></textarea><br><br>
+<textarea id="notes" placeholder="Paste teacher notes here" rows="6"></textarea><br>
 
 <select id="difficulty">
   <option value="easy">Easy</option>
   <option value="medium">Medium</option>
   <option value="hard">Hard</option>
-</select><br><br>
+</select><br>
 
 <button onclick="generateQuiz()">Generate Quiz</button>
 
@@ -22,7 +62,7 @@
 <div id="quiz"></div>
 
 <script>
-const BACKEND_URL = "https://ai-quizcraft.onrender.com"; // Your Render backend URL
+const BACKEND_URL = "https://ai-quizcraft.onrender.com"; // Your live backend
 
 async function generateQuiz() {
   const notes = document.getElementById("notes").value;
@@ -47,8 +87,8 @@ async function generateQuiz() {
 
     data.forEach((q, idx) => {
       const div = document.createElement("div");
-      div.innerHTML = `<p>${idx+1}. ${q.question}</p>` +
-        q.options.map((opt, i) => 
+      div.innerHTML = `<p><b>${idx+1}. ${q.question}</b></p>` +
+        q.options.map((opt, i) =>
           `<button onclick="alert('${i===q.answer ? 'Correct!' : 'Wrong!'}')">${opt}</button>`
         ).join(" ");
       container.appendChild(div);
