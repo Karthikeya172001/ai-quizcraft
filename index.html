@@ -1,46 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AI QuizCraft</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI QuizCraft</title>
 </head>
 <body>
-  <h1>AI QuizCraft</h1>
-  <textarea id="notes" placeholder="Paste teacher notes here" rows="4" cols="30"></textarea><br>
-  <select id="difficulty">
-    <option value="easy">Easy</option>
-    <option value="medium">Medium</option>
-    <option value="hard">Hard</option>
-  </select><br>
-  <button onclick="generateQuiz()">Generate Quiz</button>
-  <div id="quiz"></div>
+<h1>AI QuizCraft</h1>
 
-  <script>
-    async function generateQuiz() {
-      const notes = document.getElementById("notes").value;
-      const difficulty = document.getElementById("difficulty").value;
-      const container = document.getElementById("quiz");
-      container.innerHTML = "Generating...";
+<textarea id="notes" placeholder="Paste teacher notes here" rows="6" cols="40"></textarea><br><br>
 
-      try {
-        const response = await fetch("/quiz", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ notes, difficulty })
-        });
-        const data = await response.json();
-        container.innerHTML = "";
+<select id="difficulty">
+  <option value="easy">Easy</option>
+  <option value="medium">Medium</option>
+  <option value="hard">Hard</option>
+</select><br><br>
 
-        data.forEach((q, idx) => {
-          const div = document.createElement("div");
-          div.innerHTML = `<p>${idx+1}. ${q.question}</p>` +
-            q.options.map((opt, i) => `<button onclick="alert('${i===q.answer ? 'Correct!' : 'Wrong!'}')">${opt}</button>`).join("");
-          container.appendChild(div);
-        });
-      } catch (err) {
-        container.innerHTML = "Error generating quiz.";
-        console.error(err);
-      }
+<button onclick="generateQuiz()">Generate Quiz</button>
+
+<h3>Quiz Output:</h3>
+<div id="quiz"></div>
+
+<script>
+const BACKEND_URL = "https://ai-quizcraft.onrender.com"; // Replace with your Render URL
+
+async function generateQuiz() {
+  const notes = document.getElementById("notes").value;
+  const difficulty = document.getElementById("difficulty").value;
+  const container = document.getElementById("quiz");
+  container.innerHTML = "Generating quiz...";
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/quiz`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes, difficulty })
+    });
+
+    if (!response.ok) {
+      container.innerHTML = `Error: ${response.statusText}`;
+      return;
     }
-  </script>
+
+    const data = await response.json();
+    container.innerHTML = "";
+
+    data.forEach((q, idx) => {
+      const div = document.createElement("div");
+      div.innerHTML = `<p>${idx+1}. ${q.question}</p>` +
+        q.options.map((opt, i) => 
+          `<button onclick="alert('${i===q.answer ? 'Correct!' : 'Wrong!'}')">${opt}</button>`
+        ).join(" ");
+      container.appendChild(div);
+      container.appendChild(document.createElement("hr"));
+    });
+  } catch (err) {
+    container.innerHTML = "Error generating quiz.";
+    console.error(err);
+  }
+}
+</script>
 </body>
 </html>
