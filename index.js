@@ -7,13 +7,20 @@ dotenv.config();
 const app = express();
 app.use(bodyParser.json());
 
+// OpenAI client using your API key from environment
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Test route to check if server is running
+app.get("/", (req, res) => {
+  res.send("AI QuizCraft backend is running!");
+});
+
+// Main route: generate quiz from notes
 app.post("/quiz", async (req, res) => {
   const { notes, difficulty } = req.body;
 
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(400).json({ error: "OpenAI API key missing" });
+  if (!notes || !difficulty) {
+    return res.status(400).json({ error: "Notes and difficulty are required" });
   }
 
   try {
@@ -24,7 +31,7 @@ app.post("/quiz", async (req, res) => {
       messages: [{ role: "user", content: prompt }]
     });
 
-    let quiz = JSON.parse(response.choices[0].message.content);
+    const quiz = JSON.parse(response.choices[0].message.content);
     res.json(quiz);
   } catch (err) {
     console.error(err);
@@ -32,7 +39,6 @@ app.post("/quiz", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => res.send("AI QuizCraft backend running!"));
-
+// Start the server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
