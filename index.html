@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI QuizCraft</title>
+</head>
+<body>
+  <h1>AI QuizCraft</h1>
+  <textarea id="notes" placeholder="Paste teacher notes here" rows="4" cols="30"></textarea><br>
+  <select id="difficulty">
+    <option value="easy">Easy</option>
+    <option value="medium">Medium</option>
+    <option value="hard">Hard</option>
+  </select><br>
+  <button onclick="generateQuiz()">Generate Quiz</button>
+  <div id="quiz"></div>
+
+  <script>
+    async function generateQuiz() {
+      const notes = document.getElementById("notes").value;
+      const difficulty = document.getElementById("difficulty").value;
+      const container = document.getElementById("quiz");
+      container.innerHTML = "Generating...";
+
+      try {
+        const response = await fetch("/quiz", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notes, difficulty })
+        });
+        const data = await response.json();
+        container.innerHTML = "";
+
+        data.forEach((q, idx) => {
+          const div = document.createElement("div");
+          div.innerHTML = `<p>${idx+1}. ${q.question}</p>` +
+            q.options.map((opt, i) => `<button onclick="alert('${i===q.answer ? 'Correct!' : 'Wrong!'}')">${opt}</button>`).join("");
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = "Error generating quiz.";
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
