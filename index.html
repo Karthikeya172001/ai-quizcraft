@@ -5,48 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI QuizCraft</title>
 <style>
-body{font-family:Arial;margin:20px;background:#f7f7f7}h1{text-align:center;color:#333}textarea{width:100%;max-width:400px;margin-bottom:10px;padding:10px;font-size:16px}select,button{padding:10px;font-size:16px;margin-bottom:10px}#quiz div{background:#fff;padding:10px;margin-bottom:10px;border-radius:5px}#quiz button{margin:3px;padding:6px 10px;font-size:14px}hr{border:none;border-top:1px solid #ddd;margin:10px 0}
+  body { font-family: Arial; margin: 20px; background: #f7f7f7; }
+  h1 { text-align: center; }
+  textarea, select, button { font-size: 16px; margin: 5px 0; }
+  #quiz div { background: #fff; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
 </style>
 </head>
 <body>
 <h1>AI QuizCraft</h1>
+
 <textarea id="notes" placeholder="Paste teacher notes here" rows="6"></textarea><br>
+
 <select id="difficulty">
   <option value="easy">Easy</option>
   <option value="medium">Medium</option>
   <option value="hard">Hard</option>
 </select><br>
+
 <button onclick="generateQuiz()">Generate Quiz</button>
+
 <h3>Quiz Output:</h3>
 <div id="quiz"></div>
 
 <script>
-const BACKEND_URL = "https://ai-quizcraft.onrender.com"; // Your Render backend URL
+const BACKEND_URL = "https://your-render-url.onrender.com"; // Replace with your deployed backend
 
-async function generateQuiz(){
+async function generateQuiz() {
   const notes = document.getElementById("notes").value;
   const difficulty = document.getElementById("difficulty").value;
   const container = document.getElementById("quiz");
-  container.innerHTML="Generating quiz...";
+  container.innerHTML = "Generating quiz...";
 
   try {
-    const response=await fetch(`${BACKEND_URL}/quiz`,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({notes,difficulty})
+    const response = await fetch(`${BACKEND_URL}/quiz`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes, difficulty })
     });
-    if(!response.ok){container.innerHTML=`Error: ${response.statusText}`; return;}
-    const data=await response.json();
-    container.innerHTML="";
-    data.forEach((q,idx)=>{
-      const div=document.createElement("div");
-      div.innerHTML=`<p><b>${idx+1}. ${q.question}</b></p>`+
-        q.options.map((opt,i)=>`<button onclick="alert('${i===q.answer?'Correct!':'Wrong!'}')">${opt}</button>`).join(" ");
+
+    if (!response.ok) {
+      container.innerHTML = `Error: ${response.statusText}`;
+      return;
+    }
+
+    const data = await response.json();
+    container.innerHTML = "";
+
+    data.forEach((q, idx) => {
+      const div = document.createElement("div");
+      div.innerHTML = `<p><b>${idx+1}. ${q.question}</b></p>` +
+        q.options.map((opt, i) =>
+          `<button onclick="alert('${i===q.answer ? 'Correct!' : 'Wrong!'}')">${opt}</button>`
+        ).join(" ");
       container.appendChild(div);
       container.appendChild(document.createElement("hr"));
     });
-  } catch(err){
-    container.innerHTML="Error generating quiz.";
+  } catch (err) {
+    container.innerHTML = "Error generating quiz.";
     console.error(err);
   }
 }
